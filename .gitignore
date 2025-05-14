@@ -3,3 +3,5 @@
 *.png
 a.out
 *.root
+tasks/6/rdataframe_compiled
+tasks/6/rdataframe_jitted_C.d

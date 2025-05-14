@@ -1,4 +1,7 @@
+//#pragma cling optimize(3)
+
 template <typename T> using Vec = const ROOT::RVec<T>&;
+
 using ROOT::Math::XYZTVector;
 
 ROOT::RVec<std::size_t> find_trijet(Vec<XYZTVector> jets) {
@@ -42,7 +45,7 @@ void rdataframe_jitted() {
     using ROOT::VecOps::Construct;
 
     ROOT::EnableImplicitMT();
-    ROOT::RDataFrame df("Events", "root://eospublic.cern.ch//eos/root-eos/benchmark/Run2012B_SingleMu.root");
+    ROOT::RDataFrame df("Events", "../../../data/Run2012B_SingleMu.root");
     auto df2 = df.Filter("nJet >= 3", "At least three jets")
                  .Define("JetXYZT", [](Vec<float> pt, Vec<float> eta, Vec<float> phi, Vec<float> m) {
                               return Construct<XYZTVector>(Construct<PtEtaPhiMVector>(pt, eta, phi, m));},
