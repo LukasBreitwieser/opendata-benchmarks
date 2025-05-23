@@ -2,35 +2,134 @@
 #include "ROOT/RDataFrame.hxx"
 #include "ROOT/RVec.hxx"
 #include "TCanvas.h"
+#include "flattened_jagged_vec.h"
+#include "DevicePtEtaPhiMVector.h"
+#include "DevicePxPyPzE4D.h"
+#include "DeviceLorentzVector.h"
 #include <TFile.h>
 #include <TTree.h>
 #include <iostream>
 #include <vector>
 
-template <typename T> using RVec = ROOT::RVec<T>;
-
 class AnalysisWorkflow {
 public:
   AnalysisWorkflow(const std::string &filename);
+  ~AnalysisWorkflow();
   void Run();
 
 private:
+  // host attributes
   std::string filename_;
-  std::vector<UInt_t> nJets = {};
-  std::vector<RVec<float>> Jet_pts = {};
-  std::vector<RVec<float>> Jet_etas = {};
-  std::vector<RVec<float>> Jet_phis = {};
-  std::vector<RVec<float>> Jet_masses = {};
+  std::vector<UInt_t> nJets;
+  JaggedVec<float> Jet_pts;
+  JaggedVec<float> Jet_etas;
+  JaggedVec<float> Jet_phis;
+  JaggedVec<float> Jet_masses;
+
+  // tranformed attributes to be used on the GPU
+  // FlattendJaggedVec contains host and device members
+  FlattenedJaggedVec<float> flattened_Jet_pts;
+  FlattenedJaggedVec<float> flattened_Jet_etas;
+  FlattenedJaggedVec<float> flattened_Jet_phis;
+  FlattenedJaggedVec<float> flattened_Jet_masses;
+
+  // pure device attributes
+  UInt_t *device_nJets = nullptr;
 
   void LoadAndFilterData();
-  void CopyHostToDevice();
+  void FlattenJaggedAttributes();
+  void CopyToDevice();
   void RunAnalysis();
-  void CopyDeviceToHost();
+  void CopyToHost();
+  void GeneratePlots();
 };
 
-#ifdef FOO
+AnalysisWorkflow::AnalysisWorkflow(const std::string &filename)
+    : filename_(filename) {}
+
+AnalysisWorkflow::~AnalysisWorkflow() {
+  if (device_nJets) {
+    cudaFree(device_nJets);
+    device_nJets = nullptr;
+  }
+}
+
+void AnalysisWorkflow::Run() {
+  LoadAndFilterData();
+  FlattenJaggedAttributes();
+  CopyToDevice();
+  RunAnalysis();
+  CopyToHost();
+  GeneratePlots();
+}
+
+void AnalysisWorkflow::LoadAndFilterData() {
+  ROOT::EnableImplicitMT(); // Optional: Enable multi-threading
+  std::string treename = "Events";
+  ROOT::RDataFrame df(treename, filename_);
+  auto df2 = df.Filter([](unsigned int n) { return n >= 3; }, {"nJet"},
+                       "At least three jets");
+  nJets = df2.Take<UInt_t>("nJet").GetValue();
+  Jet_pts = df2.Take<ROOT::RVec<Float_t>>("Jet_pt").GetValue();
+  Jet_etas = df2.Take<ROOT::RVec<Float_t>>("Jet_eta").GetValue();
+  Jet_phis = df2.Take<ROOT::RVec<Float_t>>("Jet_phi").GetValue();
+  Jet_masses = df2.Take<ROOT::RVec<Float_t>>("Jet_mass").GetValue();
+}
+
+void AnalysisWorkflow::FlattenJaggedAttributes() {
+  flattened_Jet_pts = Jet_pts;
+  flattened_Jet_etas = Jet_etas;
+  flattened_Jet_phis = Jet_phis;
+  flattened_Jet_masses = Jet_masses;
+}
+
+void AnalysisWorkflow::CopyToDevice() {
+  if (cudaMalloc(reinterpret_cast<void**>(&device_nJets), nJets.size() * sizeof(UInt_t)) != cudaSuccess) {
+    throw std::runtime_error("cudaMalloc failed!");
+  }
+  cudaMemcpy(device_nJets, nJets.data(), nJets.size() * sizeof(UInt_t), cudaMemcpyHostToDevice);
+
+  flattened_Jet_pts.CopyToDevice();
+  flattened_Jet_etas.CopyToDevice();
+  flattened_Jet_phis.CopyToDevice();
+  flattened_Jet_masses.CopyToDevice();
+}
+
+__global__ void AnalysisKernel();
+
+void AnalysisWorkflow::RunAnalysis() {
+  AnalysisKernel<<<1, 1>>>();
+  cudaDeviceSynchronize();
+  cudaError_t err = cudaGetLastError();
+  if (err != cudaSuccess) {
+    std::stringstream s;
+    s << "Kernel launch failed: " << cudaGetErrorString(err) << std::endl;
+    throw std::runtime_error(s.str());
+  }
+}
+
+void AnalysisWorkflow::CopyToHost() {}
+
+void AnalysisWorkflow::GeneratePlots() {}
+
+__global__ void AnalysisKernel() {
+  //auto JetXYZT = Construct<XYZTVector>(Construct<PtEtaPhiMVector>(pt, eta, phi, m));},
+  //Trijet_idx = find_trijet(JetXYZT);
+  //Trijet_pt = trijet_pt(pt, eta, phi, m, Trijet_idx);
+  // histogram 
+}
+
+#ifdef OFF
 template <typename T> using Vec = const ROOT::RVec<T> &;
 using ROOT::Math::XYZTVector;
+
+XYZTVector 
+       typedef LorentzVector<PxPyPzE4D<double> > XYZTVector;
+Construct
+PtEtaPhiMVector
+  operator+
+  pt()
+Construct
 
 __device__ ROOT::RVec<std::size_t> find_trijet(Vec<XYZTVector> jets) {
   constexpr std::size_t n = 3;
@@ -70,35 +169,9 @@ __device__ float trijet_pt(Vec<float> pt, Vec<float> eta, Vec<float> phi,
 }
 #endif
 
-AnalysisWorkflow::AnalysisWorkflow(const std::string &filename)
-    : filename_(filename) {}
-
-void AnalysisWorkflow::Run() { LoadAndFilterData(); }
-
-void AnalysisWorkflow::LoadAndFilterData() {
-  ROOT::EnableImplicitMT(); // Optional: Enable multi-threading
-  std::string treename = "Events";
-  ROOT::RDataFrame df(treename, filename_);
-  auto df2 = df.Filter([](unsigned int n) { return n >= 3; }, {"nJet"},
-                       "At least three jets");
-  nJets = df2.Take<UInt_t>("nJet").GetValue();
-  Jet_pts = df2.Take<ROOT::RVec<Float_t>>("Jet_pt").GetValue();
-  Jet_etas = df2.Take<ROOT::RVec<Float_t>>("Jet_eta").GetValue();
-  Jet_phis = df2.Take<ROOT::RVec<Float_t>>("Jet_phi").GetValue();
-  Jet_masses = df2.Take<ROOT::RVec<Float_t>>("Jet_mass").GetValue();
-}
-
-//__global__ void GPUAnalysisKernel() {
-// auto JetXYZT = Construct<XYZTVector>(
-// Construct<PtEtaPhiMVector>(Jet_pt, Jet_eta, Jet_phi, Jet_mass));
-// auto Trijet_idx = find_trijet(JetXYZT);
-
-// auto Trijet_pt = trijet_pt(Jet_pt, Jet_eta, Jet_mass, Trijet_idx);
-// auto Trijet_leadingBtag = Max(Take(Jet_btag, Trijet_idx));
-//}
-
 int main() {
   AnalysisWorkflow workflow("../../../data/Run2012B_SingleMu.root");
   workflow.Run();
   return 0;
 }
+
