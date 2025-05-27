@@ -135,7 +135,7 @@ FlattenedJaggedVec<T>::operator[](std::size_t idx) const {
                                  device_sizes_[idx]);
 }
 
-template <typename T> std::size_t FlattenedJaggedVec<T>::Vec::size() const {
+template <typename T> __device__ std::size_t FlattenedJaggedVec<T>::Vec::size() const {
   return size_;
 }
 

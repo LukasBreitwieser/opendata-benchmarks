@@ -1,7 +1,8 @@
-#include "Math/Vector4D.h"
+//#include "Math/Vector4D.h"
 #include "ROOT/RDataFrame.hxx"
 #include "ROOT/RVec.hxx"
 #include "TCanvas.h"
+#include "TH1F.h"
 #include "flattened_jagged_vec.h"
 #include "DevicePtEtaPhiMVector.h"
 #include "DevicePxPyPzE4D.h"
@@ -39,6 +40,7 @@ private:
 
   // device attribute without transformation
   UInt_t *device_nJets = nullptr;
+  float *device_trijet_pt_bins = nullptr;
 
   // attribute only needed on the GPU -> no host equivalent
   FlattenedJaggedVec<DeviceXYZTVector> device_Jet_xyzts;
@@ -120,7 +122,25 @@ void AnalysisWorkflow::RunAnalysis() {
 
 void AnalysisWorkflow::CopyToHost() {}
 
-void AnalysisWorkflow::GeneratePlots() {}
+void AnalysisWorkflow::GeneratePlots() {
+   TH1F h1("", ";Trijet pt (GeV);N_{Events}",/*nbins*/ 100, /*xin*/ 15, /*xmax*/ 40);
+    //int nbins = binContents.size();
+    //double xmin = 0.0;
+    //double xmax = static_cast<double>(nbins);
+
+    // Set bin contents (ROOT bins are 1-indexed!)
+    for (int i = 0; i < h1.GetNbinsX(); ++i) {
+        //h->SetBinContent(i + 1, binContents[i]);
+    }
+
+    TCanvas c;
+    //c.Divide(2, 1);
+    //c.cd(1);
+    h1.Draw();
+    //c.cd(2);
+    //h2->Draw();
+    c.SaveAs("6_rdataframe_compiled.png");
+}
 
 __global__ void AnalysisKernel() {
   int idx = blockIdx.x * blockDim.x + threadIdx.x;
@@ -132,6 +152,7 @@ __global__ void AnalysisKernel() {
   //Trijet_idx = find_trijet(JetXYZT);
   //Trijet_pt = trijet_pt(pt, eta, phi, m, Trijet_idx);
   // histogram 
+  //atomicAdd(&trijet_pt_bins[bin_idx], 1);
 }
 
 #ifdef OFF
