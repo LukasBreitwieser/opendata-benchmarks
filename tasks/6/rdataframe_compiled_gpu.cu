@@ -17,8 +17,8 @@ typedef DeviceLorentzVector<DevicePxPyPzE4D<double>> DeviceXYZTVector;
 using DeviceAttr = FlattenedJaggedVec<float>::DeviceAttr;
 
 __global__ void
-AnalysisKernel(UInt_t *nJets, DeviceAttr Jet_pts, DeviceAttr Jet_etas,
-               DeviceAttr Jet_phis, DeviceAttr Jet_masses,
+AnalysisKernel(uint64_t num_events, UInt_t *nJets, DeviceAttr Jet_pts,
+               DeviceAttr Jet_etas, DeviceAttr Jet_phis, DeviceAttr Jet_masses,
                FlattenedJaggedVec<DeviceXYZTVector>::DeviceAttr Jet_xyzts,
                float *trijet_pt_bins);
 
@@ -121,7 +121,7 @@ void AnalysisWorkflow::RunAnalysis() {
   int num_blocks =
       (nJets.size() + num_threads_per_block_ - 1) / num_threads_per_block_;
   AnalysisKernel<<<num_threads_per_block_, num_blocks>>>(
-      device_nJets, flattened_Jet_pts.GetDeviceAttr(),
+      nJets.size(), device_nJets, flattened_Jet_pts.GetDeviceAttr(),
       flattened_Jet_etas.GetDeviceAttr(), flattened_Jet_phis.GetDeviceAttr(),
       flattened_Jet_masses.GetDeviceAttr(), device_Jet_xyzts.GetDeviceAttr(),
       device_trijet_pt_bins);
@@ -157,14 +157,14 @@ void AnalysisWorkflow::GeneratePlots() {
 }
 
 __global__ void
-AnalysisKernel(UInt_t *nJets, DeviceAttr Jet_pts, DeviceAttr Jet_etas,
-               DeviceAttr Jet_phis, DeviceAttr Jet_masses,
+AnalysisKernel(uint64_t num_events, UInt_t *nJets, DeviceAttr Jet_pts,
+               DeviceAttr Jet_etas, DeviceAttr Jet_phis, DeviceAttr Jet_masses,
                FlattenedJaggedVec<DeviceXYZTVector>::DeviceAttr Jet_xyzts,
                float *trijet_pt_bins) {
   int idx = blockIdx.x * blockDim.x + threadIdx.x;
-  // if (idx >= aw.nJets.size()) {
-  // return;
-  //}
+  if (idx >= num_events) {
+    return;
+  }
 
   // auto JetXYZT = Construct<XYZTVector>(Construct<PtEtaPhiMVector>(pt, eta,
   // phi, m));}, Trijet_idx = find_trijet(JetXYZT); Trijet_pt = trijet_pt(pt,
