@@ -11,8 +11,9 @@
 #include <iostream>
 #include <vector>
 
- typedef DeviceLorentzVector<DevicePxPyPzE4D<double> > DeviceXYZTVector;
+typedef DeviceLorentzVector<DevicePxPyPzE4D<double> > DeviceXYZTVector;
 
+__global__ void AnalysisKernel();
 
 class AnalysisWorkflow {
 public:
@@ -36,10 +37,13 @@ private:
   FlattenedJaggedVec<float> flattened_Jet_phis;
   FlattenedJaggedVec<float> flattened_Jet_masses;
 
-  FlattenedJaggedVec<DeviceXYZTVector> flattened_Jet_xyzts;
-
-  // pure device attributes
+  // device attribute without transformation
   UInt_t *device_nJets = nullptr;
+
+  // attribute only needed on the GPU -> no host equivalent
+  FlattenedJaggedVec<DeviceXYZTVector> device_Jet_xyzts;
+
+  int num_threads_per_block_ = 128;
 
   void LoadAndFilterData();
   void FlattenJaggedAttributes();
@@ -98,12 +102,13 @@ void AnalysisWorkflow::CopyToDevice() {
   flattened_Jet_etas.CopyToDevice();
   flattened_Jet_phis.CopyToDevice();
   flattened_Jet_masses.CopyToDevice();
+
+  device_Jet_xyzts.ReserveDataAndCopySizesAndOffsetsToDevice(flattened_Jet_pts); 
 }
 
-__global__ void AnalysisKernel();
-
 void AnalysisWorkflow::RunAnalysis() {
-  AnalysisKernel<<<1, 1>>>();
+  int num_blocks = (nJets.size() + num_threads_per_block_ - 1) / num_threads_per_block_;
+  AnalysisKernel<<<num_threads_per_block_, 1>>>();
   cudaDeviceSynchronize();
   cudaError_t err = cudaGetLastError();
   if (err != cudaSuccess) {
@@ -118,6 +123,11 @@ void AnalysisWorkflow::CopyToHost() {}
 void AnalysisWorkflow::GeneratePlots() {}
 
 __global__ void AnalysisKernel() {
+  int idx = blockIdx.x * blockDim.x + threadIdx.x;
+  //if (idx >= aw.nJets.size()) {
+    //return;
+  //}
+
   //auto JetXYZT = Construct<XYZTVector>(Construct<PtEtaPhiMVector>(pt, eta, phi, m));},
   //Trijet_idx = find_trijet(JetXYZT);
   //Trijet_pt = trijet_pt(pt, eta, phi, m, Trijet_idx);

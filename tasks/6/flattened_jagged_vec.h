@@ -30,6 +30,9 @@ public:
   __device__ Vec operator[](std::size_t idx) const;
 
 private:
+  template <typename U>
+  friend class FlattenedJaggedVec;
+
   std::vector<T> host_flattened_data_;
   std::vector<int64_t> host_sizes_;
   std::vector<int64_t> host_offsets_;
@@ -116,6 +119,7 @@ void FlattenedJaggedVec<T>::ReserveDataAndCopySizesAndOffsetsToDevice(const Flat
     throw std::runtime_error("cudaMalloc failed!");
   }
 
+  // TODO avoid copies
   // copy data
   cudaMemcpy(device_sizes_, other.host_sizes_.data(),
              other.host_sizes_.size() * sizeof(int64_t), cudaMemcpyHostToDevice);
@@ -125,7 +129,7 @@ void FlattenedJaggedVec<T>::ReserveDataAndCopySizesAndOffsetsToDevice(const Flat
 
 
 template <typename T>
-typename FlattenedJaggedVec<T>::Vec
+__device__ typename FlattenedJaggedVec<T>::Vec
 FlattenedJaggedVec<T>::operator[](std::size_t idx) const {
   return FlattenedJaggedVec::Vec(&device_flattened_data_[device_offsets_[idx]],
                                  device_sizes_[idx]);
