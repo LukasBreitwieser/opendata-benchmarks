@@ -117,10 +117,10 @@ public :
 
    // cartesian (Minkowski)coordinate accessors
 
-   Scalar Px() const { return fX;}
-   Scalar Py() const { return fY;}
-   Scalar Pz() const { return fZ;}
-   Scalar E()  const { return fT;}
+   __device__ Scalar Px() const { return fX;}
+   __device__ Scalar Py() const { return fY;}
+   __device__ Scalar Pz() const { return fZ;}
+   __device__ Scalar E()  const { return fT;}
 
    Scalar X() const { return fX;}
    Scalar Y() const { return fY;}
@@ -143,21 +143,22 @@ public :
    /**
       vector magnitude squared (or mass squared)
    */
-   Scalar M2() const   { return fT*fT - fX*fX - fY*fY - fZ*fZ;}
+   __device__ Scalar M2() const   { return fT*fT - fX*fX - fY*fY - fZ*fZ;}
    Scalar Mag2() const { return M2(); }
 
    /**
       invariant mass
    */
-   Scalar M() const
+   __device__ Scalar M() const
    {
       const Scalar mm = M2();
       if (mm >= 0) {
          using std::sqrt;
          return sqrt(mm);
       } else {
-        throw std::runtime_error ("DevicePxPyPzE4D::M() - Tachyonic:\n"
-                   "    P^2 > E^2 so the mass would be imaginary");
+        // FIXME device code does not support exceptions -> commented code for now
+        //throw std::runtime_error ("DevicePxPyPzE4D::M() - Tachyonic:\n"
+                   //"    P^2 > E^2 so the mass would be imaginary");
          using std::sqrt;
          return -sqrt(-mm);
       }
@@ -264,7 +265,7 @@ public :
    /**
        set all values using cartesian coordinates
    */
-   void SetPxPyPzE(Scalar px, Scalar py, Scalar pz, Scalar e) {
+   __device__ void SetPxPyPzE(Scalar px, Scalar py, Scalar pz, Scalar e) {
       fX=px;
       fY=py;
       fZ=pz;

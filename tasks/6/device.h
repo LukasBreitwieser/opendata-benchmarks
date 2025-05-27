@@ -6,9 +6,38 @@
 #include "DevicePtEtaPhiMVector.h"
 #include "DevicePxPyPzE4D.h"
 #include "flattened_jagged_vec.h"
+#include <cmath>
+#include <cstddef>
 
 typedef DeviceLorentzVector<DevicePxPyPzE4D<double>> DeviceXYZTVector;
 using DeviceAttr = FlattenedJaggedVec<float>::DeviceAttr;
+
+__device__ void
+find_trijet(FlattenedJaggedVec<DeviceXYZTVector>::DeviceAttr::Vec jets,
+            std::size_t *Trijet_index) {
+  constexpr std::size_t n = 3;
+  float distance = 1e9;
+  const auto top_mass = 172.5;
+
+  for (std::size_t i = 0; i <= jets.size() - n; i++) {
+    auto p1 = jets[i];
+    for (std::size_t j = i + 1; j <= jets.size() - n + 1; j++) {
+      auto p2 = jets[j];
+      for (std::size_t k = j + 1; k <= jets.size() - n + 2; k++) {
+        auto p3 = jets[k];
+        const auto tmp_mass = (p1 + p2 + p3).mass();
+        const auto tmp_distance = std::abs(tmp_mass - top_mass);
+        if (tmp_distance < distance) {
+          distance = tmp_distance;
+          Trijet_index[0] = i;
+          Trijet_index[1] = j;
+          Trijet_index[2] = k;
+          // TODO Discuss with Jonas why the last trijet is returned and not the first
+        }
+      }
+    }
+  }
+}
 
 __global__ void
 AnalysisKernel(uint64_t num_events, UInt_t *nJets, DeviceAttr Jet_pts,
@@ -26,46 +55,15 @@ AnalysisKernel(uint64_t num_events, UInt_t *nJets, DeviceAttr Jet_pts,
                                       Jet_phis[idx][i], Jet_masses[idx][i]);
     JetXYZT[i] = DeviceXYZTVector(ptEtaPhiMVector); // TODO avoid copy
   }
-  // auto JetXYZT = Construct<XYZTVector>(Construct<PtEtaPhiMVector>(pt, eta,
-  // phi, m));}, Trijet_idx = find_trijet(JetXYZT); Trijet_pt = trijet_pt(pt,
+  std::size_t Trijet_idx[3];
+  find_trijet(JetXYZT, Trijet_idx);
+  // Trijet_pt = trijet_pt(pt,
   // eta, phi, m, Trijet_idx);
   //  histogram
   // atomicAdd(&trijet_pt_bins[bin_idx], 1);
 }
 
 #ifdef OFF
-template <typename T> using Vec = const ROOT::RVec<T> &;
-using ROOT::Math::XYZTVector;
-
-XYZTVector typedef LorentzVector<PxPyPzE4D<double>> XYZTVector;
-Construct PtEtaPhiMVector operator+ pt() Construct
-
-    __device__ ROOT::RVec<std::size_t> find_trijet(Vec<XYZTVector> jets) {
-  constexpr std::size_t n = 3;
-  float distance = 1e9;
-  const auto top_mass = 172.5;
-  std::size_t idx1 = 0, idx2 = 1, idx3 = 2;
-
-  for (std::size_t i = 0; i <= jets.size() - n; i++) {
-    auto p1 = jets[i];
-    for (std::size_t j = i + 1; j <= jets.size() - n + 1; j++) {
-      auto p2 = jets[j];
-      for (std::size_t k = j + 1; k <= jets.size() - n + 2; k++) {
-        auto p3 = jets[k];
-        const auto tmp_mass = (p1 + p2 + p3).mass();
-        const auto tmp_distance = std::abs(tmp_mass - top_mass);
-        if (tmp_distance < distance) {
-          distance = tmp_distance;
-          idx1 = i;
-          idx2 = j;
-          idx3 = k;
-        }
-      }
-    }
-  }
-  return {idx1, idx2, idx3};
-}
-
 __device__ float trijet_pt(Vec<float> pt, Vec<float> eta, Vec<float> phi,
                            Vec<float> mass, Vec<std::size_t> idx) {
   auto p1 = ROOT::Math::PtEtaPhiMVector(pt[idx[0]], eta[idx[0]], phi[idx[0]],

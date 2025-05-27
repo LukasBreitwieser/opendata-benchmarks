@@ -238,11 +238,11 @@ ROOT provides specialisations and aliases to them of the ROOT::Math::DeviceLoren
           (if the vector is held in another coordinates, like (Pt,eta,phi,m)
           then (x, y, z, t) are converted to that form)
        */
-       DeviceLorentzVector<CoordSystem>& SetXYZT (Scalar xx, Scalar yy, Scalar zz, Scalar tt) {
+       __device__ DeviceLorentzVector<CoordSystem>& SetXYZT (Scalar xx, Scalar yy, Scalar zz, Scalar tt) {
           fCoordinates.SetPxPyPzE(xx,yy,zz,tt);
           return *this;
        }
-       DeviceLorentzVector<CoordSystem>& SetPxPyPzE (Scalar xx, Scalar yy, Scalar zz, Scalar ee) {
+       __device__ DeviceLorentzVector<CoordSystem>& SetPxPyPzE (Scalar xx, Scalar yy, Scalar zz, Scalar ee) {
           fCoordinates.SetPxPyPzE(xx,yy,zz,ee);
           return *this;
        }
@@ -275,7 +275,7 @@ ROOT provides specialisations and aliases to them of the ROOT::Math::DeviceLoren
           spatial X component
        */
        Scalar Px() const  { return fCoordinates.Px(); }
-       Scalar X()  const  { return fCoordinates.Px(); }
+       __device__ Scalar X()  const  { return fCoordinates.Px(); }
        /**
           spatial Y component
        */
@@ -393,7 +393,7 @@ ROOT provides specialisations and aliases to them of the ROOT::Math::DeviceLoren
           member functions
        */
       template< class OtherDeviceLorentzVector >
-      inline DeviceLorentzVector & operator += ( const OtherDeviceLorentzVector & q)
+      __device__ inline DeviceLorentzVector & operator += ( const OtherDeviceLorentzVector & q)
        {
           SetXYZT( x() + q.x(), y() + q.y(), z() + q.z(), t() + q.t()  );
           return *this;
@@ -419,7 +419,7 @@ ROOT provides specialisations and aliases to them of the ROOT::Math::DeviceLoren
           \return a new DeviceLorentzVector of the same type as v1
        */
        template<class OtherDeviceLorentzVector>
-       DeviceLorentzVector  operator +  ( const OtherDeviceLorentzVector & v2) const
+       __device__ DeviceLorentzVector  operator +  ( const OtherDeviceLorentzVector & v2) const
        {
           DeviceLorentzVector<CoordinateType> v3(*this);
           v3 += v2;
@@ -637,10 +637,10 @@ ROOT provides specialisations and aliases to them of the ROOT::Math::DeviceLoren
 
        // Method providing limited backward name compatibility with CLHEP ----
 
-       Scalar x()     const { return fCoordinates.Px();     }
-       Scalar y()     const { return fCoordinates.Py();     }
-       Scalar z()     const { return fCoordinates.Pz();     }
-       Scalar t()     const { return fCoordinates.E();      }
+       __device__ Scalar x()     const { return fCoordinates.Px();     }
+       __device__ Scalar y()     const { return fCoordinates.Py();     }
+       __device__ Scalar z()     const { return fCoordinates.Pz();     }
+       __device__ Scalar t()     const { return fCoordinates.E();      }
        Scalar px()    const { return fCoordinates.Px();     }
        Scalar py()    const { return fCoordinates.Py();     }
        Scalar pz()    const { return fCoordinates.Pz();     }
@@ -660,7 +660,7 @@ ROOT provides specialisations and aliases to them of the ROOT::Math::DeviceLoren
 
        // Methods  requested by CMS ---
        Scalar energy() const { return fCoordinates.E();      }
-       Scalar mass()   const { return fCoordinates.M();      }
+       __device__ Scalar mass()   const { return fCoordinates.M();      }
        Scalar mass2()  const { return fCoordinates.M2();     }
 
 
