@@ -1,7 +1,7 @@
-// #include "Math/Vector4D.h"
 #include "DeviceLorentzVector.h"
 #include "DevicePtEtaPhiMVector.h"
 #include "DevicePxPyPzE4D.h"
+#include "Math/Vector4D.h"
 #include "ROOT/RDataFrame.hxx"
 #include "ROOT/RVec.hxx"
 #include "TCanvas.h"
@@ -30,6 +30,7 @@ private:
   JaggedVec<float> Jet_etas;
   JaggedVec<float> Jet_phis;
   JaggedVec<float> Jet_masses;
+  std::vector<float> host_trijet_pt_bins_;
 
   // tranformed attributes to be used on the GPU
   // FlattendJaggedVec contains host and device members
@@ -46,6 +47,7 @@ private:
   FlattenedJaggedVec<DeviceXYZTVector> device_Jet_xyzts;
 
   int num_threads_per_block_ = 128;
+  int num_histogram_bins_ = 100;
 
   void LoadAndFilterData();
   void FlattenJaggedAttributes();
@@ -85,6 +87,9 @@ void AnalysisWorkflow::LoadAndFilterData() {
   Jet_etas = df2.Take<ROOT::RVec<Float_t>>("Jet_eta").GetValue();
   Jet_phis = df2.Take<ROOT::RVec<Float_t>>("Jet_phi").GetValue();
   Jet_masses = df2.Take<ROOT::RVec<Float_t>>("Jet_mass").GetValue();
+
+  // initialize histrogram bins
+  host_trijet_pt_bins_.resize(num_histogram_bins_ + 2); // +2 for over/underflow
 }
 
 void AnalysisWorkflow::FlattenJaggedAttributes() {
@@ -94,13 +99,19 @@ void AnalysisWorkflow::FlattenJaggedAttributes() {
   flattened_Jet_masses = Jet_masses;
 }
 
-void AnalysisWorkflow::CopyToDevice() {
-  if (cudaMalloc(reinterpret_cast<void **>(&device_nJets),
-                 nJets.size() * sizeof(UInt_t)) != cudaSuccess) {
+template <typename T>
+void cudaMallocAndCopy(const std::vector<T> &host_vector, T *device_array) {
+  if (cudaMalloc(reinterpret_cast<void **>(&device_array),
+                 host_vector.size() * sizeof(T)) != cudaSuccess) {
     throw std::runtime_error("cudaMalloc failed!");
   }
-  cudaMemcpy(device_nJets, nJets.data(), nJets.size() * sizeof(UInt_t),
+  cudaMemcpy(device_array, host_vector.data(), host_vector.size() * sizeof(T),
              cudaMemcpyHostToDevice);
+}
+
+void AnalysisWorkflow::CopyToDevice() {
+  cudaMallocAndCopy(nJets, device_nJets);
+  cudaMallocAndCopy(host_trijet_pt_bins_, device_trijet_pt_bins);
 
   flattened_Jet_pts.CopyToDevice();
   flattened_Jet_etas.CopyToDevice();
@@ -136,7 +147,7 @@ void AnalysisWorkflow::GeneratePlots() {
   for (int i = 0; i < h1.GetNbinsX(); ++i) {
     // h->SetBinContent(i + 1, binContents[i]);
   }
-  nbins TCanvas c;
+  TCanvas c;
   // c.Divide(2, 1);
   // c.cd(1);
   h1.Draw();
