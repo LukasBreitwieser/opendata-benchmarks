@@ -3,6 +3,9 @@
 #define DEVICE_H_
 
 #include "flattened_jagged_vec.h"
+#include "DeviceLorentzVector.h"
+#include "DevicePtEtaPhiMVector.h"
+#include "DevicePxPyPzE4D.h"
 
 typedef DeviceLorentzVector<DevicePxPyPzE4D<double>> DeviceXYZTVector;
 using DeviceAttr = FlattenedJaggedVec<float>::DeviceAttr;
@@ -17,6 +20,9 @@ AnalysisKernel(uint64_t num_events, UInt_t *nJets, DeviceAttr Jet_pts,
     return;
   }
 
+  for (int i = 0; i < nJets[idx]; i++) {
+     DevicePtEtaPhiM4D ptEtaPhiMVector(Jet_pts[idx][i], Jet_etas[idx][i], Jet_phis[idx][i], Jet_masses[idx][i]);
+  }
   // auto JetXYZT = Construct<XYZTVector>(Construct<PtEtaPhiMVector>(pt, eta,
   // phi, m));}, Trijet_idx = find_trijet(JetXYZT); Trijet_pt = trijet_pt(pt,
   // eta, phi, m, Trijet_idx);

@@ -26,9 +26,11 @@ public:
     int64_t *offsets;
 
     class Vec {
-      T data_;
+      T *data_;
       std::size_t size_;
-      public:
+
+    public:
+      __device__ Vec(T *data, std::size_t size) : data_(data), size_(size) {}
       __device__ std::size_t size() const;
       __device__ T operator[](std::size_t idx) const;
     };
@@ -141,9 +143,8 @@ void FlattenedJaggedVec<T>::ReserveDataAndCopySizesAndOffsetsToDevice(
 template <typename T>
 __device__ typename FlattenedJaggedVec<T>::DeviceAttr::Vec
 FlattenedJaggedVec<T>::DeviceAttr::operator[](std::size_t idx) const {
-  return FlattenedJaggedVec::Vec(
-      &device_attributes_.flattened_data[device_attributes_.offsets[idx]],
-      device_attributes_.sizes[idx]);
+  return FlattenedJaggedVec::DeviceAttr::Vec(&flattened_data[offsets[idx]],
+                                             sizes[idx]);
 }
 
 template <typename T>
@@ -152,7 +153,8 @@ __device__ std::size_t FlattenedJaggedVec<T>::DeviceAttr::Vec::size() const {
 }
 
 template <typename T>
-__device__ T FlattenedJaggedVec<T>::DeviceAttr::Vec::operator[](std::size_t idx) const {
+__device__ T
+FlattenedJaggedVec<T>::DeviceAttr::Vec::operator[](std::size_t idx) const {
   return data_[idx];
 }
 

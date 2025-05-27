@@ -1,6 +1,3 @@
-#include "DeviceLorentzVector.h"
-#include "DevicePtEtaPhiMVector.h"
-#include "DevicePxPyPzE4D.h"
 #include "Math/Vector4D.h"
 #include "ROOT/RDataFrame.hxx"
 #include "ROOT/RVec.hxx"
@@ -13,15 +10,6 @@
 #include <TTree.h>
 #include <iostream>
 #include <vector>
-
-typedef DeviceLorentzVector<DevicePxPyPzE4D<double>> DeviceXYZTVector;
-using DeviceAttr = FlattenedJaggedVec<float>::DeviceAttr;
-
-__global__ void
-AnalysisKernel(uint64_t num_events, UInt_t *nJets, DeviceAttr Jet_pts,
-               DeviceAttr Jet_etas, DeviceAttr Jet_phis, DeviceAttr Jet_masses,
-               FlattenedJaggedVec<DeviceXYZTVector>::DeviceAttr Jet_xyzts,
-               float *trijet_pt_bins);
 
 class AnalysisWorkflow {
 public:

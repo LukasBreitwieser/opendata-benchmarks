@@ -61,12 +61,12 @@ public :
    /**
       Default constructor gives zero 4-vector (with zero mass)
    */
-   DevicePtEtaPhiM4D() : fPt(0), fEta(0), fPhi(0), fM(0) { }
+   __device__ DevicePtEtaPhiM4D() : fPt(0), fEta(0), fPhi(0), fM(0) { }
 
    /**
       Constructor  from pt, eta, phi, mass values
    */
-   DevicePtEtaPhiM4D(Scalar pt, Scalar eta, Scalar phi, Scalar mass) :
+   __device__ DevicePtEtaPhiM4D(Scalar pt, Scalar eta, Scalar phi, Scalar mass) :
       fPt(pt), fEta(eta), fPhi(phi), fM(mass) {
       RestrictPhi();
       if (fM < 0) RestrictNegMass();
@@ -248,20 +248,21 @@ public :
    Scalar Et() const { using std::cosh; return E() / cosh(fEta); }
 
 private:
-   inline static Scalar pi() { return M_PI; }
-   inline void RestrictPhi() {
+   __device__ inline static Scalar pi() { return M_PI; }
+   __device__ inline void RestrictPhi() {
       using std::floor;
       if (fPhi <= -pi() || fPhi > pi()) fPhi = fPhi - floor(fPhi / (2 * pi()) + .5) * 2 * pi();
    }
    // restrict the value of negative mass to avoid unphysical negative E2 values
    // M2 must be less than P2 for the tachionic particles - otherwise use positive values
-   inline void RestrictNegMass() {
-      if (fM < 0) {
-         if (P2() - fM * fM < 0) {
-         throw std::runtime_error("PtEtaPhiM4D::unphysical value of mass, set to closest physical value");
-            fM = -P();
-         }
-      }
+   __device__ inline void RestrictNegMass() {
+      // FIXME device code does not support exceptions -> commented code for now
+      //if (fM < 0) {
+         //if (P2() - fM * fM < 0) {
+         //throw std::runtime_error("PtEtaPhiM4D::unphysical value of mass, set to closest physical value");
+            //fM = -P();
+         //}
+      //}
    }
 
 public:
