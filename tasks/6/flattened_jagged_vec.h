@@ -17,7 +17,8 @@ public:
   void CopyToDevice();
   // FlattenedJaggedVec operator=(const JaggedVec<T> &jagged_vector);
   template <typename U>
-  void ReserveDataAndCopySizesAndOffsetsToDevice(const FlattenedJaggedVec<U> &flattened);
+  void ReserveDataAndCopySizesAndOffsetsToDevice(
+      const FlattenedJaggedVec<U> &flattened);
 
   struct Vec {
     T data_;
@@ -30,8 +31,7 @@ public:
   __device__ Vec operator[](std::size_t idx) const;
 
 private:
-  template <typename U>
-  friend class FlattenedJaggedVec;
+  template <typename U> friend class FlattenedJaggedVec;
 
   std::vector<T> host_flattened_data_;
   std::vector<int64_t> host_sizes_;
@@ -95,17 +95,20 @@ template <typename T> void FlattenedJaggedVec<T>::CopyToDevice() {
 }
 
 template <typename T>
-template <typename U> 
-void FlattenedJaggedVec<T>::ReserveDataAndCopySizesAndOffsetsToDevice(const FlattenedJaggedVec<U> &other) {
+template <typename U>
+void FlattenedJaggedVec<T>::ReserveDataAndCopySizesAndOffsetsToDevice(
+    const FlattenedJaggedVec<U> &other) {
   if (other.host_flattened_data_.empty()) {
-    std::cout << "Warning: FlattenedJaggedVec<T>::ReserveDataAndCopySizesAndOffsetsToDevice: "
-              << "the given argument has zero size. " << std::endl;
+    std::cout
+        << "Warning: "
+           "FlattenedJaggedVec<T>::ReserveDataAndCopySizesAndOffsetsToDevice: "
+        << "the given argument has zero size. " << std::endl;
   }
-
 
   // allocate device memory
   if (cudaMalloc(reinterpret_cast<void **>(&device_flattened_data_),
-                 other.host_flattened_data_.size() * sizeof(T)) != cudaSuccess) {
+                 other.host_flattened_data_.size() * sizeof(T)) !=
+      cudaSuccess) {
     throw std::runtime_error("cudaMalloc failed!");
   }
 
@@ -122,11 +125,12 @@ void FlattenedJaggedVec<T>::ReserveDataAndCopySizesAndOffsetsToDevice(const Flat
   // TODO avoid copies
   // copy data
   cudaMemcpy(device_sizes_, other.host_sizes_.data(),
-             other.host_sizes_.size() * sizeof(int64_t), cudaMemcpyHostToDevice);
+             other.host_sizes_.size() * sizeof(int64_t),
+             cudaMemcpyHostToDevice);
   cudaMemcpy(device_offsets_, other.host_offsets_.data(),
-             other.host_offsets_.size() * sizeof(int64_t), cudaMemcpyHostToDevice);
+             other.host_offsets_.size() * sizeof(int64_t),
+             cudaMemcpyHostToDevice);
 }
-
 
 template <typename T>
 __device__ typename FlattenedJaggedVec<T>::Vec
@@ -135,11 +139,14 @@ FlattenedJaggedVec<T>::operator[](std::size_t idx) const {
                                  device_sizes_[idx]);
 }
 
-template <typename T> __device__ std::size_t FlattenedJaggedVec<T>::Vec::size() const {
+template <typename T>
+__device__ std::size_t FlattenedJaggedVec<T>::Vec::size() const {
   return size_;
 }
 
 template <typename T>
-__device__ T FlattenedJaggedVec<T>::Vec::operator[](std::size_t idx) const { return data_[idx]; }
+__device__ T FlattenedJaggedVec<T>::Vec::operator[](std::size_t idx) const {
+  return data_[idx];
+}
 
 #endif // FLATTENED_JAGGED_VEC_H_
