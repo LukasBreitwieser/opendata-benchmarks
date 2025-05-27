@@ -33,7 +33,7 @@ private:
   JaggedVec<float> Jet_masses;
   std::vector<float> host_trijet_pt_bins_;
 
-  // tranformed attributes to be used on the GPU
+  // transformed attributes to be used on the GPU
   // FlattendJaggedVec contains host and device members
   FlattenedJaggedVec<float> flattened_Jet_pts;
   FlattenedJaggedVec<float> flattened_Jet_etas;
@@ -133,9 +133,6 @@ void AnalysisWorkflow::CopyToHost() {
 void AnalysisWorkflow::GeneratePlots() {
   TH1F h1("", ";Trijet pt (GeV);N_{Events}", /*nbins*/ 100, /*xin*/ 15,
           /*xmax*/ 40);
-  // int nbins = binContents.size();
-  // double xmin = 0.0;
-  // double xmax = static_cast<double>(nbins);
 
   // Set bin contents (ROOT bins are 1-indexed!)
   for (int i = 0; i < h1.GetNbinsX(); ++i) {
