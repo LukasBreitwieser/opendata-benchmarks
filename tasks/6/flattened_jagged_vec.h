@@ -16,6 +16,8 @@ public:
   FlattenedJaggedVec(const JaggedVec<T> &jagged);
   void CopyToDevice();
   // FlattenedJaggedVec operator=(const JaggedVec<T> &jagged_vector);
+  template <typename U>
+  void ReserveDataAndCopySizesAndOffsetsToDevice(const FlattenedJaggedVec<U> &flattened);
 
   struct Vec {
     T data_;
@@ -88,6 +90,39 @@ template <typename T> void FlattenedJaggedVec<T>::CopyToDevice() {
   cudaMemcpy(device_offsets_, host_offsets_.data(),
              host_offsets_.size() * sizeof(int64_t), cudaMemcpyHostToDevice);
 }
+
+template <typename T>
+template <typename U> 
+void FlattenedJaggedVec<T>::ReserveDataAndCopySizesAndOffsetsToDevice(const FlattenedJaggedVec<U> &other) {
+  if (other.host_flattened_data_.empty()) {
+    std::cout << "Warning: FlattenedJaggedVec<T>::ReserveDataAndCopySizesAndOffsetsToDevice: "
+              << "the given argument has zero size. " << std::endl;
+  }
+
+
+  // allocate device memory
+  if (cudaMalloc(reinterpret_cast<void **>(&device_flattened_data_),
+                 other.host_flattened_data_.size() * sizeof(T)) != cudaSuccess) {
+    throw std::runtime_error("cudaMalloc failed!");
+  }
+
+  if (cudaMalloc(reinterpret_cast<void **>(&device_sizes_),
+                 other.host_sizes_.size() * sizeof(int64_t)) != cudaSuccess) {
+    throw std::runtime_error("cudaMalloc failed!");
+  }
+
+  if (cudaMalloc(reinterpret_cast<void **>(&device_offsets_),
+                 other.host_offsets_.size() * sizeof(int64_t)) != cudaSuccess) {
+    throw std::runtime_error("cudaMalloc failed!");
+  }
+
+  // copy data
+  cudaMemcpy(device_sizes_, other.host_sizes_.data(),
+             other.host_sizes_.size() * sizeof(int64_t), cudaMemcpyHostToDevice);
+  cudaMemcpy(device_offsets_, other.host_offsets_.data(),
+             other.host_offsets_.size() * sizeof(int64_t), cudaMemcpyHostToDevice);
+}
+
 
 template <typename T>
 typename FlattenedJaggedVec<T>::Vec

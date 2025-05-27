@@ -8,7 +8,7 @@
  *                                                                    *
  **********************************************************************/
 
-// Header file for class LorentzVector
+// Header file for class DeviceLorentzVector
 //
 // Created by:    moneta   at Tue May 31 17:06:09 2005
 // Major mods by: fischler at Wed Jul 20   2005
@@ -31,17 +31,17 @@
 //__________________________________________________________________________________________
 /** @ingroup GenVector
 
-Class describing a generic LorentzVector in the 4D space-time,
+Class describing a generic DeviceLorentzVector in the 4D space-time,
 using the specified coordinate system for the spatial vector part.
-The metric used for the LorentzVector is (-,-,-,+).
-In the case of LorentzVector we don't distinguish the concepts
+The metric used for the DeviceLorentzVector is (-,-,-,+).
+In the case of DeviceLorentzVector we don't distinguish the concepts
 of points and displacement vectors as in the 3D case,
 since the main use case for 4D Vectors is to describe the kinematics of
-relativistic particles. A LorentzVector behaves like a
+relativistic particles. A DeviceLorentzVector behaves like a
 DisplacementVector in 4D.  The Minkowski components could be viewed as
 v and t, or for kinematic 4-vectors, as p and E.
 
-ROOT provides specialisations and aliases to them of the ROOT::Math::LorentzVector template:
+ROOT provides specialisations and aliases to them of the ROOT::Math::DeviceLorentzVector template:
 - ROOT::Math::PtEtaPhiMVector based on pt (rho),eta,phi and M (t) coordinates in double precision
 - ROOT::Math::PtEtaPhiEVector based on pt (rho),eta,phi and E (t) coordinates in double precision
 - ROOT::Math::PxPyPzMVector based on px,py,pz and M (mass) coordinates in double precision
@@ -53,7 +53,7 @@ ROOT provides specialisations and aliases to them of the ROOT::Math::LorentzVect
 */
 
     template< class CoordSystem >
-    class LorentzVector {
+    class DeviceLorentzVector {
 
     public:
 
@@ -65,54 +65,54 @@ ROOT provides specialisations and aliases to them of the ROOT::Math::LorentzVect
        /**
           default constructor of an empty vector (Px = Py = Pz = E = 0 )
        */
-       LorentzVector ( ) : fCoordinates() { }
+       DeviceLorentzVector ( ) : fCoordinates() { }
 
        /**
           generic constructors from four scalar values.
           The association between values and coordinate depends on the
-          coordinate system.  For PxPyPzE4D,
+          coordinate system.  For DevicePxPyPzE4D,
           \param a scalar value (Px)
           \param b scalar value (Py)
           \param c scalar value (Pz)
           \param d scalar value (E)
        */
-       LorentzVector(const Scalar & a,
+       DeviceLorentzVector(const Scalar & a,
                      const Scalar & b,
                      const Scalar & c,
                      const Scalar & d) :
           fCoordinates(a , b,  c, d)  { }
 
        /**
-          constructor from a LorentzVector expressed in different
+          constructor from a DeviceLorentzVector expressed in different
           coordinates, or using a different Scalar type
        */
        template< class Coords >
-       explicit constexpr LorentzVector(const LorentzVector<Coords> & v ) :
+       explicit constexpr DeviceLorentzVector(const DeviceLorentzVector<Coords> & v ) :
           fCoordinates( v.Coordinates() ) { }
 
        /**
-          Construct from a foreign 4D vector type, for example, HepLorentzVector
+          Construct from a foreign 4D vector type, for example, HepDeviceLorentzVector
           Precondition: v must implement methods x(), y(), z(), and t()
        */
-       template<class ForeignLorentzVector,
-                typename = decltype(std::declval<ForeignLorentzVector>().x()
-                                    + std::declval<ForeignLorentzVector>().y()
-                                    + std::declval<ForeignLorentzVector>().z()
-                                    + std::declval<ForeignLorentzVector>().t())>
-       explicit constexpr LorentzVector( const ForeignLorentzVector & v) :
-          fCoordinates(PxPyPzE4D<Scalar>( v.x(), v.y(), v.z(), v.t()  ) ) { }
+       template<class ForeignDeviceLorentzVector,
+                typename = decltype(std::declval<ForeignDeviceLorentzVector>().x()
+                                    + std::declval<ForeignDeviceLorentzVector>().y()
+                                    + std::declval<ForeignDeviceLorentzVector>().z()
+                                    + std::declval<ForeignDeviceLorentzVector>().t())>
+       explicit constexpr DeviceLorentzVector( const ForeignDeviceLorentzVector & v) :
+          fCoordinates(DevicePxPyPzE4D<Scalar>( v.x(), v.y(), v.z(), v.t()  ) ) { }
 
 #ifdef LATER
        /**
           construct from a generic linear algebra  vector implementing operator []
           and with a size of at least 4. This could be also a C array
           In this case v[0] is the first data member
-          ( Px for a PxPyPzE4D base)
+          ( Px for a DevicePxPyPzE4D base)
           \param v LA vector
           \param index0 index of first vector element (Px)
        */
        template< class LAVector >
-       explicit constexpr LorentzVector(const LAVector & v, size_t index0 ) {
+       explicit constexpr DeviceLorentzVector(const LAVector & v, size_t index0 ) {
           fCoordinates = CoordSystem ( v[index0], v[index0+1], v[index0+2], v[index0+3] );
        }
 #endif
@@ -124,7 +124,7 @@ ROOT provides specialisations and aliases to them of the ROOT::Math::LorentzVect
           Assignment operator from a lorentz vector of arbitrary type
        */
        template< class OtherCoords >
-       LorentzVector & operator= ( const LorentzVector<OtherCoords> & v) {
+       DeviceLorentzVector & operator= ( const DeviceLorentzVector<OtherCoords> & v) {
           fCoordinates = v.Coordinates();
           return *this;
        }
@@ -133,12 +133,12 @@ ROOT provides specialisations and aliases to them of the ROOT::Math::LorentzVect
           assignment from any other Lorentz vector  implementing
           x(), y(), z() and t()
        */
-       template<class ForeignLorentzVector,
-                typename = decltype(std::declval<ForeignLorentzVector>().x()
-                                    + std::declval<ForeignLorentzVector>().y()
-                                    + std::declval<ForeignLorentzVector>().z()
-                                    + std::declval<ForeignLorentzVector>().t())>
-       LorentzVector & operator = ( const ForeignLorentzVector & v) {
+       template<class ForeignDeviceLorentzVector,
+                typename = decltype(std::declval<ForeignDeviceLorentzVector>().x()
+                                    + std::declval<ForeignDeviceLorentzVector>().y()
+                                    + std::declval<ForeignDeviceLorentzVector>().z()
+                                    + std::declval<ForeignDeviceLorentzVector>().t())>
+       DeviceLorentzVector & operator = ( const ForeignDeviceLorentzVector & v) {
           SetXYZT( v.x(), v.y(), v.z(), v.t() );
           return *this;
        }
@@ -148,12 +148,12 @@ ROOT provides specialisations and aliases to them of the ROOT::Math::LorentzVect
           assign from a generic linear algebra  vector implementing operator []
           and with a size of at least 4
           In this case v[0] is the first data member
-          ( Px for a PxPyPzE4D base)
+          ( Px for a DevicePxPyPzE4D base)
           \param v LA vector
           \param index0 index of first vector element (Px)
        */
        template< class LAVector >
-       LorentzVector & AssignFrom(const LAVector & v, size_t index0=0 ) {
+       DeviceLorentzVector & AssignFrom(const LAVector & v, size_t index0=0 ) {
           fCoordinates.SetCoordinates( v[index0], v[index0+1], v[index0+2], v[index0+3] );
           return *this;
        }
@@ -171,7 +171,7 @@ ROOT provides specialisations and aliases to them of the ROOT::Math::LorentzVect
        /**
           Set internal data based on an array of 4 Scalar numbers
        */
-       LorentzVector<CoordSystem>& SetCoordinates( const Scalar src[] ) {
+       DeviceLorentzVector<CoordSystem>& SetCoordinates( const Scalar src[] ) {
           fCoordinates.SetCoordinates(src);
           return *this;
        }
@@ -179,7 +179,7 @@ ROOT provides specialisations and aliases to them of the ROOT::Math::LorentzVect
        /**
           Set internal data based on 4 Scalar numbers
        */
-       LorentzVector<CoordSystem>& SetCoordinates( Scalar a, Scalar b, Scalar c, Scalar d ) {
+       DeviceLorentzVector<CoordSystem>& SetCoordinates( Scalar a, Scalar b, Scalar c, Scalar d ) {
           fCoordinates.SetCoordinates(a, b, c, d);
           return *this;
        }
@@ -188,7 +188,7 @@ ROOT provides specialisations and aliases to them of the ROOT::Math::LorentzVect
           Set internal data based on 4 Scalars at *begin to *end
        */
        template< class IT >
-       LorentzVector<CoordSystem>& SetCoordinates( IT begin, IT end  ) {
+       DeviceLorentzVector<CoordSystem>& SetCoordinates( IT begin, IT end  ) {
           IT a = begin; IT b = ++begin; IT c = ++begin; IT d = ++begin;
           (void)end;
           assert (++begin==end);
@@ -237,11 +237,11 @@ ROOT provides specialisations and aliases to them of the ROOT::Math::LorentzVect
           (if the vector is held in another coordinates, like (Pt,eta,phi,m)
           then (x, y, z, t) are converted to that form)
        */
-       LorentzVector<CoordSystem>& SetXYZT (Scalar xx, Scalar yy, Scalar zz, Scalar tt) {
+       DeviceLorentzVector<CoordSystem>& SetXYZT (Scalar xx, Scalar yy, Scalar zz, Scalar tt) {
           fCoordinates.SetPxPyPzE(xx,yy,zz,tt);
           return *this;
        }
-       LorentzVector<CoordSystem>& SetPxPyPzE (Scalar xx, Scalar yy, Scalar zz, Scalar ee) {
+       DeviceLorentzVector<CoordSystem>& SetPxPyPzE (Scalar xx, Scalar yy, Scalar zz, Scalar ee) {
           fCoordinates.SetPxPyPzE(xx,yy,zz,ee);
           return *this;
        }
@@ -251,10 +251,10 @@ ROOT provides specialisations and aliases to them of the ROOT::Math::LorentzVect
        /**
           Exact equality
        */
-       bool operator==(const LorentzVector & rhs) const {
+       bool operator==(const DeviceLorentzVector & rhs) const {
           return fCoordinates==rhs.fCoordinates;
        }
-       bool operator!= (const LorentzVector & rhs) const {
+       bool operator!= (const DeviceLorentzVector & rhs) const {
           return !(operator==(rhs));
        }
 
@@ -372,27 +372,27 @@ ROOT provides specialisations and aliases to them of the ROOT::Math::LorentzVect
        // ------ Operations combining two Lorentz vectors ------
 
        /**
-          scalar (Dot) product of two LorentzVector vectors (metric is -,-,-,+)
-          Enable the product using any other LorentzVector implementing
+          scalar (Dot) product of two DeviceLorentzVector vectors (metric is -,-,-,+)
+          Enable the product using any other DeviceLorentzVector implementing
           the x(), y() , y() and t() member functions
-          \param  q  any LorentzVector implementing the x(), y() , z() and t()
+          \param  q  any DeviceLorentzVector implementing the x(), y() , z() and t()
           member functions
           \return the result of v.q of type according to the base scalar type of v
        */
 
-       template< class OtherLorentzVector >
-       Scalar Dot(const OtherLorentzVector & q) const {
+       template< class OtherDeviceLorentzVector >
+       Scalar Dot(const OtherDeviceLorentzVector & q) const {
           return t()*q.t() - x()*q.x() - y()*q.y() - z()*q.z();
        }
 
        /**
           Self addition with another Vector ( v+= q )
-          Enable the addition with any other LorentzVector
-          \param  q  any LorentzVector implementing the x(), y() , z() and t()
+          Enable the addition with any other DeviceLorentzVector
+          \param  q  any DeviceLorentzVector implementing the x(), y() , z() and t()
           member functions
        */
-      template< class OtherLorentzVector >
-      inline LorentzVector & operator += ( const OtherLorentzVector & q)
+      template< class OtherDeviceLorentzVector >
+      inline DeviceLorentzVector & operator += ( const OtherDeviceLorentzVector & q)
        {
           SetXYZT( x() + q.x(), y() + q.y(), z() + q.z(), t() + q.t()  );
           return *this;
@@ -400,41 +400,41 @@ ROOT provides specialisations and aliases to them of the ROOT::Math::LorentzVect
 
        /**
           Self subtraction of another Vector from this ( v-= q )
-          Enable the addition with any other LorentzVector
-          \param  q  any LorentzVector implementing the x(), y() , z() and t()
+          Enable the addition with any other DeviceLorentzVector
+          \param  q  any DeviceLorentzVector implementing the x(), y() , z() and t()
           member functions
        */
-       template< class OtherLorentzVector >
-       LorentzVector & operator -= ( const OtherLorentzVector & q) {
+       template< class OtherDeviceLorentzVector >
+       DeviceLorentzVector & operator -= ( const OtherDeviceLorentzVector & q) {
           SetXYZT( x() - q.x(), y() - q.y(), z() - q.z(), t() - q.t()  );
           return *this;
        }
 
        /**
-          addition of two LorentzVectors (v3 = v1 + v2)
-          Enable the addition with any other LorentzVector
-          \param  v2  any LorentzVector implementing the x(), y() , z() and t()
+          addition of two DeviceLorentzVectors (v3 = v1 + v2)
+          Enable the addition with any other DeviceLorentzVector
+          \param  v2  any DeviceLorentzVector implementing the x(), y() , z() and t()
           member functions
-          \return a new LorentzVector of the same type as v1
+          \return a new DeviceLorentzVector of the same type as v1
        */
-       template<class OtherLorentzVector>
-       LorentzVector  operator +  ( const OtherLorentzVector & v2) const
+       template<class OtherDeviceLorentzVector>
+       DeviceLorentzVector  operator +  ( const OtherDeviceLorentzVector & v2) const
        {
-          LorentzVector<CoordinateType> v3(*this);
+          DeviceLorentzVector<CoordinateType> v3(*this);
           v3 += v2;
           return v3;
        }
 
        /**
-          subtraction of two LorentzVectors (v3 = v1 - v2)
-          Enable the subtraction of any other LorentzVector
-          \param  v2  any LorentzVector implementing the x(), y() , z() and t()
+          subtraction of two DeviceLorentzVectors (v3 = v1 - v2)
+          Enable the subtraction of any other DeviceLorentzVector
+          \param  v2  any DeviceLorentzVector implementing the x(), y() , z() and t()
           member functions
-          \return a new LorentzVector of the same type as v1
+          \return a new DeviceLorentzVector of the same type as v1
        */
-       template<class OtherLorentzVector>
-       LorentzVector  operator -  ( const OtherLorentzVector & v2) const {
-          LorentzVector<CoordinateType> v3(*this);
+       template<class OtherDeviceLorentzVector>
+       DeviceLorentzVector  operator -  ( const OtherDeviceLorentzVector & v2) const {
+          DeviceLorentzVector<CoordinateType> v3(*this);
           v3 -= v2;
           return v3;
        }
@@ -444,7 +444,7 @@ ROOT provides specialisations and aliases to them of the ROOT::Math::LorentzVect
        /**
           multiplication by a scalar quantity v *= a
        */
-       LorentzVector & operator *= (Scalar a) {
+       DeviceLorentzVector & operator *= (Scalar a) {
           fCoordinates.Scale(a);
           return *this;
        }
@@ -452,43 +452,43 @@ ROOT provides specialisations and aliases to them of the ROOT::Math::LorentzVect
        /**
           division by a scalar quantity v /= a
        */
-       LorentzVector & operator /= (Scalar a) {
+       DeviceLorentzVector & operator /= (Scalar a) {
           fCoordinates.Scale(1/a);
           return *this;
        }
 
        /**
-          product of a LorentzVector by a scalar quantity
+          product of a DeviceLorentzVector by a scalar quantity
           \param a  scalar quantity of type a
-          \return a new mathcoreLorentzVector q = v * a same type as v
+          \return a new mathcoreDeviceLorentzVector q = v * a same type as v
        */
-       LorentzVector operator * ( const Scalar & a) const {
-          LorentzVector tmp(*this);
+       DeviceLorentzVector operator * ( const Scalar & a) const {
+          DeviceLorentzVector tmp(*this);
           tmp *= a;
           return tmp;
        }
 
        /**
-          Divide a LorentzVector by a scalar quantity
+          Divide a DeviceLorentzVector by a scalar quantity
           \param a  scalar quantity of type a
-          \return a new mathcoreLorentzVector q = v / a same type as v
+          \return a new mathcoreDeviceLorentzVector q = v / a same type as v
        */
-       LorentzVector<CoordSystem> operator / ( const Scalar & a) const {
-          LorentzVector<CoordSystem> tmp(*this);
+       DeviceLorentzVector<CoordSystem> operator / ( const Scalar & a) const {
+          DeviceLorentzVector<CoordSystem> tmp(*this);
           tmp /= a;
           return tmp;
        }
 
        /**
-          Negative of a LorentzVector (q = - v )
-          \return a new LorentzVector with opposite direction and time
+          Negative of a DeviceLorentzVector (q = - v )
+          \return a new DeviceLorentzVector with opposite direction and time
        */
-       LorentzVector operator - () const {
-          //LorentzVector<CoordinateType> v(*this);
+       DeviceLorentzVector operator - () const {
+          //DeviceLorentzVector<CoordinateType> v(*this);
           //v.Negate();
           return operator*( Scalar(-1) );
        }
-       LorentzVector operator + () const {
+       DeviceLorentzVector operator + () const {
           return *this;
        }
 
@@ -555,13 +555,13 @@ ROOT provides specialisations and aliases to them of the ROOT::Math::LorentzVect
                 //return BetaVector();
              //} else {
                 //// TODO - should attempt to Throw with msg about
-                //// boostVector computed for LorentzVector with t=0
+                //// boostVector computed for DeviceLorentzVector with t=0
                 //return -Vect()/E();
              //}
           //}
           //if (M2() <= 0) {
              //// TODO - should attempt to Throw with msg about
-             //// boostVector computed for a non-timelike LorentzVector
+             //// boostVector computed for a non-timelike DeviceLorentzVector
           //}
           //return -Vect()/E();
        //}
@@ -599,12 +599,12 @@ ROOT provides specialisations and aliases to them of the ROOT::Math::LorentzVect
                 // to avoid Nan
                 return 0;
              else {
-                throw std::runtime_error ("LorentzVector::Beta() - beta computed for LorentzVector with t = 0. Return an Infinite result");
+                throw std::runtime_error ("DeviceLorentzVector::Beta() - beta computed for DeviceLorentzVector with t = 0. Return an Infinite result");
                 return 1./E();
              }
           }
           if ( M2() <= 0 ) {
-             throw std::runtime_error ("LorentzVector::Beta() - beta computed for non-timelike LorentzVector . Result is physically meaningless" );
+             throw std::runtime_error ("DeviceLorentzVector::Beta() - beta computed for non-timelike DeviceLorentzVector . Result is physically meaningless" );
           }
           return P() / E();
        }
@@ -618,16 +618,16 @@ ROOT provides specialisations and aliases to them of the ROOT::Math::LorentzVect
              if ( P2() == 0) {
                 return 1;
              } else {
-                throw std::runtime_error ("LorentzVector::Gamma() - gamma computed for LorentzVector with t = 0. Return a zero result");
+                throw std::runtime_error ("DeviceLorentzVector::Gamma() - gamma computed for DeviceLorentzVector with t = 0. Return a zero result");
 
              }
           }
           if ( t2 < v2 ) {
-             throw std::runtime_error ("LorentzVector::Gamma() - gamma computed for a spacelike LorentzVector. Imaginary result");
+             throw std::runtime_error ("DeviceLorentzVector::Gamma() - gamma computed for a spacelike DeviceLorentzVector. Imaginary result");
              return 0;
           }
           else if ( t2 == v2 ) {
-             throw std::runtime_error ("LorentzVector::Gamma() - gamma computed for a lightlike LorentzVector. Infinite result");
+             throw std::runtime_error ("DeviceLorentzVector::Gamma() - gamma computed for a lightlike DeviceLorentzVector. Infinite result");
           }
           using std::sqrt;
           return Scalar(1) / sqrt(Scalar(1) - v2 / t2);
@@ -668,37 +668,37 @@ ROOT provides specialisations and aliases to them of the ROOT::Math::LorentzVect
           Work only if the component is one of which the vector is represented.
           For example SetE will work for a PxPyPzE Vector but not for a PxPyPzM Vector.
        */
-       LorentzVector<CoordSystem>& SetE  ( Scalar a )  { fCoordinates.SetE  (a); return *this; }
-       LorentzVector<CoordSystem>& SetEta( Scalar a )  { fCoordinates.SetEta(a); return *this; }
-       LorentzVector<CoordSystem>& SetM  ( Scalar a )  { fCoordinates.SetM  (a); return *this; }
-       LorentzVector<CoordSystem>& SetPhi( Scalar a )  { fCoordinates.SetPhi(a); return *this; }
-       LorentzVector<CoordSystem>& SetPt ( Scalar a )  { fCoordinates.SetPt (a); return *this; }
-       LorentzVector<CoordSystem>& SetPx ( Scalar a )  { fCoordinates.SetPx (a); return *this; }
-       LorentzVector<CoordSystem>& SetPy ( Scalar a )  { fCoordinates.SetPy (a); return *this; }
-       LorentzVector<CoordSystem>& SetPz ( Scalar a )  { fCoordinates.SetPz (a); return *this; }
+       DeviceLorentzVector<CoordSystem>& SetE  ( Scalar a )  { fCoordinates.SetE  (a); return *this; }
+       DeviceLorentzVector<CoordSystem>& SetEta( Scalar a )  { fCoordinates.SetEta(a); return *this; }
+       DeviceLorentzVector<CoordSystem>& SetM  ( Scalar a )  { fCoordinates.SetM  (a); return *this; }
+       DeviceLorentzVector<CoordSystem>& SetPhi( Scalar a )  { fCoordinates.SetPhi(a); return *this; }
+       DeviceLorentzVector<CoordSystem>& SetPt ( Scalar a )  { fCoordinates.SetPt (a); return *this; }
+       DeviceLorentzVector<CoordSystem>& SetPx ( Scalar a )  { fCoordinates.SetPx (a); return *this; }
+       DeviceLorentzVector<CoordSystem>& SetPy ( Scalar a )  { fCoordinates.SetPy (a); return *this; }
+       DeviceLorentzVector<CoordSystem>& SetPz ( Scalar a )  { fCoordinates.SetPz (a); return *this; }
 
     private:
 
        CoordSystem  fCoordinates;    // internal coordinate system
        static constexpr unsigned int fDimension = CoordinateType::Dimension;
 
-    };  // LorentzVector<>
+    };  // DeviceLorentzVector<>
 
 
 
   // global methods
 
   /**
-     Scale of a LorentzVector with a scalar quantity a
+     Scale of a DeviceLorentzVector with a scalar quantity a
      \param a  scalar quantity of type a
-     \param v  mathcore::LorentzVector based on any coordinate system
-     \return a new mathcoreLorentzVector q = v * a same type as v
+     \param v  mathcore::DeviceLorentzVector based on any coordinate system
+     \return a new mathcoreDeviceLorentzVector q = v * a same type as v
    */
     template< class CoordSystem >
-    inline LorentzVector<CoordSystem> operator *
-    ( const typename  LorentzVector<CoordSystem>::Scalar & a,
-      const LorentzVector<CoordSystem>& v) {
-       LorentzVector<CoordSystem> tmp(v);
+    inline DeviceLorentzVector<CoordSystem> operator *
+    ( const typename  DeviceLorentzVector<CoordSystem>::Scalar & a,
+      const DeviceLorentzVector<CoordSystem>& v) {
+       DeviceLorentzVector<CoordSystem> tmp(v);
        tmp *= a;
        return tmp;
     }
@@ -709,7 +709,7 @@ ROOT provides specialisations and aliases to them of the ROOT::Math::LorentzVect
     //inline
     //std::basic_ostream<char_t,traits_t> &
     //operator << ( std::basic_ostream<char_t,traits_t> & os
-                  //, LorentzVector<Coords> const & v
+                  //, DeviceLorentzVector<Coords> const & v
        //)
     //{
        //if( !os )  return os;
@@ -738,7 +738,7 @@ ROOT provides specialisations and aliases to them of the ROOT::Math::LorentzVect
      //inline
      //std::basic_istream<char_t,traits_t> &
      //operator >> ( std::basic_istream<char_t,traits_t> & is
-                   //, LorentzVector<Coords> & v
+                   //, DeviceLorentzVector<Coords> & v
         //)
      //{
         //if( !is )  return is;

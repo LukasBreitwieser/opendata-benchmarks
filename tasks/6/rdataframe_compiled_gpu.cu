@@ -11,6 +11,9 @@
 #include <iostream>
 #include <vector>
 
+ typedef DeviceLorentzVector<DevicePxPyPzE4D<double> > DeviceXYZTVector;
+
+
 class AnalysisWorkflow {
 public:
   AnalysisWorkflow(const std::string &filename);
@@ -32,6 +35,8 @@ private:
   FlattenedJaggedVec<float> flattened_Jet_etas;
   FlattenedJaggedVec<float> flattened_Jet_phis;
   FlattenedJaggedVec<float> flattened_Jet_masses;
+
+  FlattenedJaggedVec<DeviceXYZTVector> flattened_Jet_xyzts;
 
   // pure device attributes
   UInt_t *device_nJets = nullptr;

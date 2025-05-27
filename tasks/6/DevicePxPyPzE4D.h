@@ -8,10 +8,10 @@
 *                                                                    *
 **********************************************************************/
 
-// Header file for class PxPyPzE4D
+// Header file for class DevicePxPyPzE4D
 //
 // Created by: fischler at Wed Jul 20   2005
-//   (starting from PxPyPzE4D by moneta)
+//   (starting from DevicePxPyPzE4D by moneta)
 //
 // Last update: $Id: 04c6d98020d7178ed5f0884f9466bca32b031565 $
 //
@@ -38,7 +38,7 @@
 */
 
 template <class ScalarType = double>
-class PxPyPzE4D {
+class DevicePxPyPzE4D {
 
 public :
 
@@ -50,13 +50,13 @@ public :
    /**
       Default constructor  with x=y=z=t=0
    */
-   PxPyPzE4D() : fX(0.0), fY(0.0), fZ(0.0), fT(0.0) { }
+   DevicePxPyPzE4D() : fX(0.0), fY(0.0), fZ(0.0), fT(0.0) { }
 
 
    /**
       Constructor  from x, y , z , t values
    */
-   PxPyPzE4D(Scalar px, Scalar py, Scalar pz, Scalar e) :
+   DevicePxPyPzE4D(Scalar px, Scalar py, Scalar pz, Scalar e) :
       fX(px), fY(py), fZ(pz), fT(e) { }
 
 
@@ -65,7 +65,7 @@ public :
       implementing x(), y() and z() and t()
    */
    template <class CoordSystem>
-   explicit constexpr PxPyPzE4D(const CoordSystem & v) :
+   explicit constexpr DevicePxPyPzE4D(const CoordSystem & v) :
       fX( v.x() ), fY( v.y() ), fZ( v.z() ), fT( v.t() )  { }
 
    // for g++  3.2 and 3.4 on 32 bits found that the compiler generated copy ctor and assignment are much slower
@@ -73,13 +73,13 @@ public :
    /**
       copy constructor
     */
-   PxPyPzE4D(const PxPyPzE4D & v) :
+   DevicePxPyPzE4D(const DevicePxPyPzE4D & v) :
       fX(v.fX), fY(v.fY), fZ(v.fZ), fT(v.fT) { }
 
    /**
       assignment operator
     */
-   PxPyPzE4D & operator = (const PxPyPzE4D & v) {
+   DevicePxPyPzE4D & operator = (const DevicePxPyPzE4D & v) {
       fX = v.fX;
       fY = v.fY;
       fZ = v.fZ;
@@ -154,7 +154,7 @@ public :
          using std::sqrt;
          return sqrt(mm);
       } else {
-        throw std::runtime_error ("PxPyPzE4D::M() - Tachyonic:\n"
+        throw std::runtime_error ("DevicePxPyPzE4D::M() - Tachyonic:\n"
                    "    P^2 > E^2 so the mass would be imaginary");
          using std::sqrt;
          return -sqrt(-mm);
@@ -189,7 +189,7 @@ public :
          using std::sqrt;
          return sqrt(mm);
       } else {
-         throw std::runtime_error("PxPyPzE4D::Mt() - Tachyonic:\n"
+         throw std::runtime_error("DevicePxPyPzE4D::Mt() - Tachyonic:\n"
                            "    Pz^2 > E^2 so the transverse mass would be imaginary");
          using std::sqrt;
          return -sqrt(-mm);
@@ -293,7 +293,7 @@ public :
       x(), y(), z() and t()
    */
    template <class AnyCoordSystem>
-   PxPyPzE4D & operator = (const AnyCoordSystem & v) {
+   DevicePxPyPzE4D & operator = (const AnyCoordSystem & v) {
       fX = v.x();
       fY = v.y();
       fZ = v.z();
@@ -304,10 +304,10 @@ public :
    /**
       Exact equality
    */
-   bool operator == (const PxPyPzE4D & rhs) const {
+   bool operator == (const DevicePxPyPzE4D & rhs) const {
       return fX == rhs.fX && fY == rhs.fY && fZ == rhs.fZ && fT == rhs.fT;
    }
-   bool operator != (const PxPyPzE4D & rhs) const {return !(operator==(rhs));}
+   bool operator != (const DevicePxPyPzE4D & rhs) const {return !(operator==(rhs));}
 
 
    // ============= Compatibility section ==================
