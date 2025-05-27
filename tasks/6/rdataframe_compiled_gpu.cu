@@ -120,7 +120,7 @@ void AnalysisWorkflow::CopyToDevice() {
 void AnalysisWorkflow::RunAnalysis() {
   int num_blocks =
       (nJets.size() + num_threads_per_block_ - 1) / num_threads_per_block_;
-  AnalysisKernel<<<num_threads_per_block_, 1>>>(
+  AnalysisKernel<<<num_threads_per_block_, num_blocks>>>(
       device_nJets, flattened_Jet_pts.GetDeviceAttr(),
       flattened_Jet_etas.GetDeviceAttr(), flattened_Jet_phis.GetDeviceAttr(),
       flattened_Jet_masses.GetDeviceAttr(), device_Jet_xyzts.GetDeviceAttr(),
