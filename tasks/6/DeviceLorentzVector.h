@@ -66,7 +66,7 @@ ROOT provides specialisations and aliases to them of the ROOT::Math::DeviceLoren
        /**
           default constructor of an empty vector (Px = Py = Pz = E = 0 )
        */
-       DeviceLorentzVector ( ) : fCoordinates() { }
+       __device__ DeviceLorentzVector ( ) : fCoordinates() { }
 
        /**
           generic constructors from four scalar values.
@@ -77,7 +77,7 @@ ROOT provides specialisations and aliases to them of the ROOT::Math::DeviceLoren
           \param c scalar value (Pz)
           \param d scalar value (E)
        */
-       DeviceLorentzVector(const Scalar & a,
+       __device__ DeviceLorentzVector(const Scalar & a,
                      const Scalar & b,
                      const Scalar & c,
                      const Scalar & d) :
@@ -88,7 +88,7 @@ ROOT provides specialisations and aliases to them of the ROOT::Math::DeviceLoren
           coordinates, or using a different Scalar type
        */
        template< class Coords >
-       explicit constexpr DeviceLorentzVector(const DeviceLorentzVector<Coords> & v ) :
+       __device__ explicit constexpr DeviceLorentzVector(const DeviceLorentzVector<Coords> & v ) :
           fCoordinates( v.Coordinates() ) { }
 
        /**
@@ -100,7 +100,7 @@ ROOT provides specialisations and aliases to them of the ROOT::Math::DeviceLoren
                                     + std::declval<ForeignDeviceLorentzVector>().y()
                                     + std::declval<ForeignDeviceLorentzVector>().z()
                                     + std::declval<ForeignDeviceLorentzVector>().t())>
-       explicit constexpr DeviceLorentzVector( const ForeignDeviceLorentzVector & v) :
+       __device__ explicit constexpr DeviceLorentzVector( const ForeignDeviceLorentzVector & v) :
           fCoordinates(DevicePxPyPzE4D<Scalar>( v.x(), v.y(), v.z(), v.t()  ) ) { }
 
 #ifdef LATER
@@ -289,7 +289,7 @@ ROOT provides specialisations and aliases to them of the ROOT::Math::DeviceLoren
        /**
           return 4-th component (time, or energy for a 4-momentum vector)
        */
-       Scalar E()  const { return fCoordinates.E(); }
+       __device__ Scalar E()  const { return fCoordinates.E(); }
        Scalar T()  const { return fCoordinates.E(); }
        /**
           return magnitude (mass) squared  M2 = T**2 - X**2 - Y**2 - Z**2

@@ -23,6 +23,7 @@
 //#include "Math/GenVector/GenVector_exception.h"
 
 
+//#include <__clang_cuda_runtime_wrapper.h>
 #include <cmath>
 #include <stdexcept>
 
@@ -57,7 +58,7 @@ public :
    /**
       Constructor  from x, y , z , t values
    */
-   DevicePxPyPzE4D(Scalar px, Scalar py, Scalar pz, Scalar e) :
+   __device__ DevicePxPyPzE4D(Scalar px, Scalar py, Scalar pz, Scalar e) :
       fX(px), fY(py), fZ(pz), fT(e) { }
 
 

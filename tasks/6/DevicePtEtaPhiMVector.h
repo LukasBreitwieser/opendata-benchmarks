@@ -29,7 +29,7 @@
 #include <stdexcept>
 
 template <class T>
-inline
+__device__ inline
 T etaMax() {
   return static_cast<T>(22756.0);
 }
@@ -77,7 +77,7 @@ public :
       Pt(), Eta(), Phi() and M()
    */
    template <class CoordSystem >
-   explicit constexpr DevicePtEtaPhiM4D(const CoordSystem & c) :
+   __device__ explicit constexpr DevicePtEtaPhiM4D(const CoordSystem & c) :
       fPt(c.Pt()), fEta(c.Eta()), fPhi(c.Phi()), fM(c.M())  { RestrictPhi(); }
 
    // for g++  3.2 and 3.4 on 32 bits found that the compiler generated copy ctor and assignment are much slower
@@ -86,7 +86,7 @@ public :
    /**
       copy constructor
     */
-   DevicePtEtaPhiM4D(const DevicePtEtaPhiM4D & v) :
+   __device__ DevicePtEtaPhiM4D(const DevicePtEtaPhiM4D & v) :
       fPt(v.fPt), fEta(v.fEta), fPhi(v.fPhi), fM(v.fM) { }
 
    /**
@@ -151,20 +151,20 @@ public :
 
    // other coordinate representation
 
-   Scalar Px() const { using std::cos; return fPt * cos(fPhi); }
-   Scalar X () const { return Px();         }
-   Scalar Py() const { using std::sin; return fPt * sin(fPhi); }
-   Scalar Y () const { return Py();         }
-   Scalar Pz() const {
+   __device__ Scalar Px() const { using std::cos; return fPt * cos(fPhi); }
+   __device__ Scalar X () const { return Px();         }
+   __device__ Scalar Py() const { using std::sin; return fPt * sin(fPhi); }
+   __device__ Scalar Y () const { return Py();         }
+   __device__ Scalar Pz() const {
       using std::sinh;
       return fPt > 0 ? fPt * sinh(fEta) : fEta == 0 ? 0 : fEta > 0 ? fEta - etaMax<Scalar>() : fEta + etaMax<Scalar>();
    }
-   Scalar Z () const { return Pz(); }
+   __device__ Scalar Z () const { return Pz(); }
 
    /**
        magnitude of momentum
    */
-   Scalar P() const {
+   __device__ Scalar P() const {
       using std::cosh;
       return fPt > 0 ? fPt * cosh(fEta)
                      : fEta > etaMax<Scalar>() ? fEta - etaMax<Scalar>()
@@ -175,7 +175,7 @@ public :
    /**
        squared magnitude of spatial components (momentum squared)
    */
-   Scalar P2() const
+   __device__ Scalar P2() const
    {
       const Scalar p = P();
       return p * p;
@@ -184,7 +184,7 @@ public :
    /**
        energy squared
    */
-   Scalar E2() const {
+   __device__ Scalar E2() const {
       Scalar e2 =  P2() + M2();
       // avoid rounding error which can make E2 negative when M2 is negative
       return e2 > 0 ? e2 : 0;
@@ -193,7 +193,7 @@ public :
    /**
        Energy (timelike component of momentum-energy 4-vector)
    */
-   Scalar E() const { using std::sqrt; return sqrt(E2()); }
+   __device__ Scalar E() const { using std::sqrt; return sqrt(E2()); }
 
    Scalar T()   const { return E();  }
 
@@ -201,7 +201,7 @@ public :
       vector magnitude squared (or mass squared)
       In case of negative mass (spacelike particles return negative values)
    */
-   Scalar M2() const   {
+   __device__ Scalar M2() const   {
       return ( fM  >= 0 ) ?  fM*fM :  -fM*fM;
    }
    Scalar Mag2() const { return M2();  }
@@ -357,10 +357,10 @@ public:
 
    // The following make this coordinate system look enough like a CLHEP
    // vector that an assignment member template can work with either
-   Scalar x() const { return X(); }
-   Scalar y() const { return Y(); }
-   Scalar z() const { return Z(); }
-   Scalar t() const { return E(); }
+   __device__ Scalar x() const { return X(); }
+   __device__ Scalar y() const { return Y(); }
+   __device__ Scalar z() const { return Z(); }
+   __device__ Scalar t() const { return E(); }
 
 
 #if defined(__MAKECINT__) || defined(G__DICTIONARY)
