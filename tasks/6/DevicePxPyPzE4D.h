@@ -52,7 +52,7 @@ public :
    /**
       Default constructor  with x=y=z=t=0
    */
-   DevicePxPyPzE4D() : fX(0.0), fY(0.0), fZ(0.0), fT(0.0) { }
+   __device__ DevicePxPyPzE4D() : fX(0.0), fY(0.0), fZ(0.0), fT(0.0) { }
 
 
    /**
@@ -75,13 +75,13 @@ public :
    /**
       copy constructor
     */
-   DevicePxPyPzE4D(const DevicePxPyPzE4D & v) :
+   __device__ DevicePxPyPzE4D(const DevicePxPyPzE4D & v) :
       fX(v.fX), fY(v.fY), fZ(v.fZ), fT(v.fT) { }
 
    /**
       assignment operator
     */
-   DevicePxPyPzE4D & operator = (const DevicePxPyPzE4D & v) {
+   __device__ DevicePxPyPzE4D & operator = (const DevicePxPyPzE4D & v) {
       fX = v.fX;
       fY = v.fY;
       fZ = v.fZ;
