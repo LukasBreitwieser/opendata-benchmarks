@@ -7,6 +7,7 @@
 #include "TCanvas.h"
 #include "TH1F.h"
 #include "flattened_jagged_vec.h"
+#include "util.h"
 #include <TFile.h>
 #include <TTree.h>
 #include <iostream>
@@ -99,16 +100,6 @@ void AnalysisWorkflow::FlattenJaggedAttributes() {
   flattened_Jet_masses = Jet_masses;
 }
 
-template <typename T>
-void cudaMallocAndCopy(const std::vector<T> &host_vector, T *device_array) {
-  if (cudaMalloc(reinterpret_cast<void **>(&device_array),
-                 host_vector.size() * sizeof(T)) != cudaSuccess) {
-    throw std::runtime_error("cudaMalloc failed!");
-  }
-  cudaMemcpy(device_array, host_vector.data(), host_vector.size() * sizeof(T),
-             cudaMemcpyHostToDevice);
-}
-
 void AnalysisWorkflow::CopyToDevice() {
   cudaMallocAndCopy(nJets, device_nJets);
   cudaMallocAndCopy(host_trijet_pt_bins_, device_trijet_pt_bins);
@@ -134,7 +125,10 @@ void AnalysisWorkflow::RunAnalysis() {
   }
 }
 
-void AnalysisWorkflow::CopyToHost() {}
+void AnalysisWorkflow::CopyToHost() {
+  // copy histogram bins back to host
+  cudaMallocAndCopy(host_trijet_pt_bins_, device_trijet_pt_bins);
+}
 
 void AnalysisWorkflow::GeneratePlots() {
   TH1F h1("", ";Trijet pt (GeV);N_{Events}", /*nbins*/ 100, /*xin*/ 15,
@@ -145,7 +139,7 @@ void AnalysisWorkflow::GeneratePlots() {
 
   // Set bin contents (ROOT bins are 1-indexed!)
   for (int i = 0; i < h1.GetNbinsX(); ++i) {
-    // h->SetBinContent(i + 1, binContents[i]);
+    h1.SetBinContent(i, host_trijet_pt_bins_[i]);
   }
   TCanvas c;
   // c.Divide(2, 1);
