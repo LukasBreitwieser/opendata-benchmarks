@@ -650,7 +650,7 @@ ROOT provides specialisations and aliases to them of the ROOT::Math::DeviceLoren
        Scalar phi()   const { return fCoordinates.Phi();    }
        Scalar rho()   const { return fCoordinates.Rho();    }
        Scalar eta()   const { return fCoordinates.Eta();    }
-       Scalar pt()    const { return fCoordinates.Pt();     }
+       __device__ Scalar pt()    const { return fCoordinates.Pt();     }
        Scalar perp2() const { return fCoordinates.Perp2();  }
        Scalar mag2()  const { return fCoordinates.M2();     }
        Scalar mag()   const { return fCoordinates.M();      }

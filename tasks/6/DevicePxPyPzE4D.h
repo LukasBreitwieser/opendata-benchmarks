@@ -19,6 +19,7 @@
 #define DEVICE_PX_PY_PZ_E_4D_H_
 
 //#include "Math/GenVector/eta.h"
+#include "eta.h"
 
 //#include "Math/GenVector/GenVector_exception.h"
 
@@ -168,13 +169,13 @@ public :
    /**
        transverse spatial component squared
    */
-   Scalar Pt2()   const { return fX*fX + fY*fY;}
-   Scalar Perp2() const { return Pt2();}
+   __device__ Scalar Pt2()   const { return fX*fX + fY*fY;}
+   __device__ Scalar Perp2() const { return Pt2();}
 
    /**
       Transverse spatial component (P_perp or rho)
    */
-   Scalar Pt() const { using std::sqrt; return sqrt(Perp2()); }
+   __device__ Scalar Pt() const { using std::sqrt; return sqrt(Perp2()); }
    Scalar Perp() const { return Pt();}
    Scalar Rho()  const { return Pt();}
 
@@ -220,7 +221,7 @@ public :
    /**
       azimuthal angle
    */
-   Scalar Phi() const { using std::atan2; return (fX == 0.0 && fY == 0.0) ? 0 : atan2(fY, fX); }
+   __device__ Scalar Phi() const { using std::atan2; return (fX == 0.0 && fY == 0.0) ? 0 : atan2(fY, fX); }
 
    /**
       polar angle
@@ -230,9 +231,9 @@ public :
    /**
        pseudorapidity
    */
-   //Scalar Eta() const {
-      //return Impl::Eta_FromRhoZ ( Pt(), fZ);
-   //}
+   __device__ Scalar Eta() const {
+      return Impl::Eta_FromRhoZ ( Pt(), fZ);
+   }
 
    // --------- Set Coordinates of this system  ---------------
 

@@ -28,12 +28,6 @@
 #include <cmath>
 #include <stdexcept>
 
-template <class T>
-__device__ inline
-T etaMax() {
-  return static_cast<T>(22756.0);
-}
-
 //__________________________________________________________________________________________
 /**
     Class describing a 4D cylindrical coordinate system
@@ -136,7 +130,7 @@ public :
 
    // 4-D Cylindrical eta coordinate accessors
 
-   Scalar Pt()  const { return fPt;  }
+   __device__ Scalar Pt()  const { return fPt;  }
    Scalar Eta() const { return fEta; }
    Scalar Phi() const { return fPhi; }
    /**
@@ -304,7 +298,7 @@ public:
    /**
        set values using cartesian coordinate system
    */
-   void SetPxPyPzE(Scalar px, Scalar py, Scalar pz, Scalar e);
+   __device__ void SetPxPyPzE(Scalar px, Scalar py, Scalar pz, Scalar e);
 
 
    // ------ Manipulations -------------
@@ -336,7 +330,7 @@ public:
       Pt(), Eta(), Phi() and M()
    */
    template <class CoordSystem >
-   DevicePtEtaPhiM4D & operator = (const CoordSystem & c) {
+   __device__ DevicePtEtaPhiM4D & operator = (const CoordSystem & c) {
       fPt  = c.Pt();
       fEta = c.Eta();
       fPhi = c.Phi();
@@ -386,6 +380,10 @@ private:
 
 };
 
+template <class ScalarType>
+__device__ inline void DevicePtEtaPhiM4D<ScalarType>::SetPxPyPzE(Scalar px, Scalar py, Scalar pz, Scalar e) {
+   *this = DevicePxPyPzE4D<Scalar> (px, py, pz, e);
+}
 
 
 #endif // DEVICEPTETAPHIMVECTOR_H_
