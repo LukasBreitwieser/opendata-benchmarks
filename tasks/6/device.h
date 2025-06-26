@@ -6,6 +6,7 @@
 #include "DevicePtEtaPhiMVector.h"
 #include "DevicePxPyPzE4D.h"
 #include "flattened_jagged_vec.h"
+#include "Histogram.h"
 #include <cmath>
 #include <cstddef>
 
@@ -34,7 +35,6 @@ find_trijet(FlattenedJaggedVec<DeviceXYZTVector>::DeviceAttr::Vec jets,
           Trijet_index[0] = i;
           Trijet_index[1] = j;
           Trijet_index[2] = k;
-          // TODO Discuss with Jonas why the last trijet is returned and not the first
         }
       }
     }
@@ -56,7 +56,7 @@ __global__ void
 AnalysisKernel(uint64_t num_events, UInt_t *nJets, DeviceAttr Jet_pts,
                DeviceAttr Jet_etas, DeviceAttr Jet_phis, DeviceAttr Jet_masses,
                FlattenedJaggedVec<DeviceXYZTVector>::DeviceAttr Jet_xyzts,
-               float *trijet_pt_bins) {
+               Histogram::DeviceHistogram trijet_pt_histogram) {
   int idx = blockIdx.x * blockDim.x + threadIdx.x;
   if (idx >= num_events) {
     return;
@@ -70,10 +70,11 @@ AnalysisKernel(uint64_t num_events, UInt_t *nJets, DeviceAttr Jet_pts,
   }
   std::size_t Trijet_idx[3];
   find_trijet(JetXYZT, Trijet_idx);
+  //printf("Thread index: %d, : Trijet_idx: %f %f %f\n", idx, Trijet_idx[0], Trijet_idx[1], Trijet_idx[2]);
+  //return;
   float Trijet_pt = trijet_pt(Jet_pts[idx], Jet_etas[idx], Jet_phis[idx], Jet_masses[idx], Trijet_idx);
   //  histogram
-  // int bin_idx = ...;
-  // atomicAdd(&trijet_pt_bins[bin_idx], 1);
+  trijet_pt_histogram.Fill(Trijet_pt);
 }
 
 #endif // DEVICE_H_
