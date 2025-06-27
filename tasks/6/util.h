@@ -2,6 +2,7 @@
 #ifndef UTIL_H_
 #define UTIL_H_
 
+#include <stdexcept>
 #include <vector>
 
 template <typename T>

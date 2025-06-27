@@ -52,11 +52,24 @@ __device__ float trijet_pt(Vec pt, Vec eta, Vec phi,
   return (p1 + p2 + p3).pt();
 }
 
+__device__ float TakeMax(Vec v, std::size_t *indices, std::size_t indices_size) {
+  float max = v[indices[0]];
+  for (int i = 1; i < indices_size; i++) {
+    auto val = v[indices[i]];
+    if (val > max) {
+      max = val;
+    }
+  }
+  return max;
+}
+
 __global__ void
 AnalysisKernel(uint64_t num_events, UInt_t *nJets, DeviceAttr Jet_pts,
                DeviceAttr Jet_etas, DeviceAttr Jet_phis, DeviceAttr Jet_masses,
+               DeviceAttr Jet_btags,
                FlattenedJaggedVec<DeviceXYZTVector>::DeviceAttr Jet_xyzts,
-               Histogram::DeviceHistogram trijet_pt_histogram) {
+               Histogram::DeviceHistogram trijet_pt_histogram, 
+               Histogram::DeviceHistogram trijet_btag_histogram) {
   int idx = blockIdx.x * blockDim.x + threadIdx.x;
   if (idx >= num_events) {
     return;
@@ -73,8 +86,10 @@ AnalysisKernel(uint64_t num_events, UInt_t *nJets, DeviceAttr Jet_pts,
   //printf("Thread index: %d, : Trijet_idx: %f %f %f\n", idx, Trijet_idx[0], Trijet_idx[1], Trijet_idx[2]);
   //return;
   float Trijet_pt = trijet_pt(Jet_pts[idx], Jet_etas[idx], Jet_phis[idx], Jet_masses[idx], Trijet_idx);
-  //  histogram
   trijet_pt_histogram.Fill(Trijet_pt);
+
+  auto Trijet_leadingBtag = TakeMax(Jet_btags[idx], Trijet_idx, 3);
+  trijet_btag_histogram.Fill(Trijet_leadingBtag);
 }
 
 #endif // DEVICE_H_

@@ -1,5 +1,6 @@
 #include "TH1F.h"
 #include "util.h"
+#include <iostream>
 
 #ifndef DEVICE_HISTOGRAM_H_
 #define DEVICE_HISTOGRAM_H_

@@ -26,8 +26,8 @@ public:
     int64_t *offsets;
 
     class Vec {
-      T *data_;
-      std::size_t size_;
+      T *data_ = nullptr;
+      std::size_t size_ = 0;
 
     public:
       __device__ Vec(T *data, std::size_t size) : data_(data), size_(size) {}
